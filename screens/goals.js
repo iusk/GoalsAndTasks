@@ -1,43 +1,10 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView, Button } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
 import { connect } from 'react-redux'
 import Moment from 'moment'
 
-class GoalRowManager extends React.Component {
-
-    state = { isExpanded: {} }
-
-    updateExpandedState = (goalId, value) => {
-        this.setState({
-            isExpanded: { [goalId]: value }
-        })
-    }
-
-    createNewState = (goalId) => {
-        newState = {...this.state.isExpanded, [goalId]: false}
-        this.setState({
-            isExpanded: newState
-        })
-    }
-
-    render() {
-        try {
-            if (this.state.isExpanded[this.props.goalId]) {
-                return <GoalRowExpanded key={this.props.goalId} goalId={this.props.goalId} goalName={this.props.name} goalDue={this.props.due}
-                tasks={this.props.tasks} updateExpandedState={this.updateExpandedState.bind(this, this.props.goalId, false)} 
-                navigation={this.props.navigation} />
-            } else {
-                return <GoalRow key={this.props.goalId} goalName={this.props.name} goalDue={this.props.due}
-                updateExpandedState={this.updateExpandedState.bind(this, this.props.goalId, true)} />
-            }
-        } catch(TypeError) {
-            this.createNewState.bind(this, this.props.goalId)
-            return <GoalRow key={this.props.goalId} goalName={this.props.name} goalDue={this.props.due}
-                updateExpandedState={this.updateExpandedState.bind(this, this.props.goalId, true)} />
-        }
-            
-    }
-}
+import CustomScrollView from '../utilities/scroll'
+import AddButton from '../utilities/addButton';
 
 class GoalRow extends React.Component {
     render() {
@@ -46,12 +13,12 @@ class GoalRow extends React.Component {
                 <View style={styles.goalRowLayout}>
                     <View style={{ flex: 1.5, height: 30 }}>
                         <Text style={styles.goalHeading} numberOfLines={1}>
-                            {this.props.goalName}
+                            {this.props.name}
                         </Text>
                     </View>
                     <View style={{ flex: 1, height: 30 }}>
                         <Text style={styles.goalDue}>
-                            Due: {this.props.goalDue}
+                            Due: {this.props.due}
                         </Text>
                     </View>
                 </View>
@@ -71,10 +38,10 @@ class GoalRowExpanded extends React.Component {
             <View style={styles.goalRowExpanded}>
                 <View style={styles.goalRowLayoutExpanded}>
                     <Text style={styles.goalHeadingExpanded} numberOfLines={2}>
-                        {this.props.goalName}
+                        {this.props.name}
                     </Text>
                     <Text style={styles.goalDueExpanded}>
-                        Due: {this.props.goalDue}
+                        Due: {this.props.due}
                     </Text>
                     <View style={styles.taskWrapper}>
                         <Text style={{ fontSize: 18, color: '#757575'}}>
@@ -87,14 +54,13 @@ class GoalRowExpanded extends React.Component {
                                 )}
                             </View>
                         </View>
-                        <View style={styles.addTask}>
-                            <TouchableOpacity style={styles.addTaskButton} onPress={() => this.props.navigation.navigate('Form', {
+                        <AddButton
+                            onPress={() => this.props.navigation.navigate('Form', {
                                 formType: 'Add Task',
                                 goalId: this.props.goalId
-                            })}>
-                                <Image style={{ height: 25, width: 25 }} source={require('../assets/images/plus.png')} />
-                            </TouchableOpacity>
-                        </View>
+                            })}
+                            size='small'
+                        />
                     </View>
                 </View>
                 <View style={styles.downView}>
@@ -135,28 +101,45 @@ class ProjectScreen extends React.Component {
         };
     };
 
-    render() {
-        const goals = this.props.goals.filter(goal => goal.projectId === this.props.navigation.getParam('projectId')) // needs to be updated to .find()
+    state = { isExpanded: {} };
 
+    updateExpandedState = (goalId, value=true) => {
+        console.log('updating expanded state')
+        let newArray = this.state.isExpanded
+        if (goalId in newArray) {
+            newArray[goalId] = value
+            this.setState({
+                isExpanded: newArray
+            })
+        } else {
+            newArray = {...newArray, [goalId]: value}
+            this.setState({
+                isExpanded: newArray
+            })
+        }
+    }
+
+    render() {
+        const goals = this.props.goals.filter(goal => goal.projectId === this.props.navigation.getParam('projectId'))
         return(
-            <ScrollView>
-                <View style={styles.body}>                  
-                    {goals.map(goal => (
-                        <GoalRowManager key={goal.Id} goalId={goal.Id} name={goal.name} due={Moment(goal.due).format('DD-MM-YYYY')} 
-                        tasks={this.props.tasks.filter(task => task.goalId === goal.Id)} updateExpandedState={this.updateExpandedState} 
-                        navigation={this.props.navigation} />
-                    ))}
-                </View>
-                <View style={styles.addGoal}>
-                    <TouchableOpacity style={styles.addGoalButton} onPress={() => this.props.navigation.navigate('Form', {
+            <View style={styles.body}>
+                <CustomScrollView
+                    content={goals.map(goal => (
+                                (this.state.isExpanded[goal.Id]) ?
+                                <GoalRowExpanded key={goal.Id} goalId={goal.Id} name={goal.name} due={Moment(goal.due).format('DD-MM-YYYY')} 
+                                tasks={this.props.tasks.filter(task => task.goalId === goal.Id)} updateExpandedState={this.updateExpandedState.bind(this, goal.Id, false)} 
+                                navigation={this.props.navigation} /> :
+                                <GoalRow key={goal.Id} name={goal.name} due={Moment(goal.due).format('DD-MM-YYYY')} updateExpandedState={this.updateExpandedState.bind(this, goal.Id, true)} />
+                            ))}
+                />
+                <AddButton
+                    onPress={() => this.props.navigation.navigate('Form', {
                         formType: 'Add Goal',
                         projectId: this.props.navigation.getParam('projectId')
-                    })}>
-                        <Image style={{ height: 40, width: 40 }} source={require('../assets/images/plus.png')} />
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-        );
+                    })}
+                />
+            </View>
+        )
     }
 }
 
@@ -169,8 +152,8 @@ export default connect(mapStateToProps)(ProjectScreen)
 
 const styles = StyleSheet.create({
     body: {
-        height: Dimensions.get('window').height,
-        backgroundColor: '#f1f1f1',
+        flex: 1,
+        backgroundColor: '#FFEB3B',
     },
     goalRow: {
         height: 75,
@@ -271,34 +254,4 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         color: '#757575',
     },
-    addGoal: {
-        position: 'absolute',
-        left: 290,
-        top: 490
-    },
-    addGoalButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 50,
-        width: 50,
-        borderWidth: 1,
-        borderColor: '#ABCDEF',
-        borderRadius: 50,
-        backgroundColor: '#ABCDEF'
-    },
-    addTask: {
-        position: 'absolute',
-        left: 285,
-        top: 165
-    },
-    addTaskButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 30,
-        width: 30,
-        borderWidth: 1,
-        borderColor: '#ABCDEF',
-        borderRadius: 50,
-        backgroundColor: '#ABCDEF'
-    }
 });

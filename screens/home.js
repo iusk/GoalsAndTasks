@@ -1,6 +1,9 @@
 import React from 'react'
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TouchableHighlight, Image } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, TouchableHighlight, Image } from 'react-native'
 import { connect } from 'react-redux'
+
+import CustomScrollView from '../utilities/scroll';
+import AddButton from '../utilities/addButton';
 
 class ProjectBox extends React.Component {
 
@@ -62,18 +65,18 @@ class HomeScreen extends React.Component {
     render() {
         return (
             <View style={styles.body}>
-                <View style={styles.projectLayout}>
-                    { this.props.projects.map(project => (
-                        <ProjectBox key={project.Id} projectId= {project.Id} projectName={project.name} projectColor={project.color} navigation={this.props.navigation} />
-                    ))}
-                </View>
-                <View style={styles.addProject}>
-                    <TouchableOpacity style={styles.addProjectButton} onPress={() => this.props.navigation.navigate('Form', {
+                <CustomScrollView
+                    content={<View style={styles.projectLayout}>
+                                {this.props.projects.map(project => (
+                                    <ProjectBox key={project.Id} projectId= {project.Id} projectName={project.name} projectColor={project.color} navigation={this.props.navigation} />
+                                ))}
+                            </View>}
+                />
+                <AddButton
+                    onPress={() => this.props.navigation.navigate('Form', {
                         formType: 'Add Project'
-                    })}>
-                        <Image style={{ height: 40, width: 40 }} source={require('../assets/images/plus.png')} />
-                    </TouchableOpacity>
-                </View>
+                    })}
+                />
             </View>
         )
     }
@@ -88,8 +91,7 @@ export default connect(mapStateToProps)(HomeScreen)
 const styles = StyleSheet.create({
     body: {
         flex: 1,
-        height: Dimensions.get('window').height,
-        backgroundColor: '#f1f1f1',
+        backgroundColor: '#FFEB3B',
     },
     projectLayout: {
         margin: 20,
@@ -121,21 +123,6 @@ const styles = StyleSheet.create({
     },
     textPress: {
         textDecorationLine: 'underline'
-    },
-    addProject: {
-        position: 'absolute',
-        left: 290,
-        top: 490
-    },
-    addProjectButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: 50,
-        width: 50,
-        borderWidth: 1,
-        borderColor: '#ABABEF',
-        borderRadius: 50,
-        backgroundColor: '#ABABEF'
     }
 });
 
