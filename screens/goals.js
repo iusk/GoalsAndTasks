@@ -121,10 +121,10 @@ class Task extends React.Component {
     }
 }
 
-class ProjectScreen extends React.Component {
+class GoalScreen extends React.Component {
     static navigationOptions = ({ navigation }) => {
         return {
-            title: navigation.getParam('projectName', 'Project'),
+            title: navigation.getParam('projectName', 'Goals'),
         };
     };
 
@@ -184,7 +184,7 @@ const mapStateToProps = (state) => ({
     tasks: state.tasks
 })
 
-export default connect(mapStateToProps)(ProjectScreen)
+export default connect(mapStateToProps)(GoalScreen)
 
 const styles = StyleSheet.create({
     body: {

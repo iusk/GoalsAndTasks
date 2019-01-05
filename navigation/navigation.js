@@ -1,14 +1,14 @@
 import { createStackNavigator, createAppContainer } from 'react-navigation';
 
 import HomeScreen from '../screens/home';
-import ProjectScreen from '../screens/goals'
+import GoalScreen from '../screens/goals'
 import FormScreen from '../screens/form/form'
 import TestScreen from '../screens/test'
 
 const RootStack = createStackNavigator(
     {
       Home: HomeScreen,
-      Project: ProjectScreen,
+      Goal: GoalScreen,
       Form: FormScreen,
       Test: TestScreen
     },

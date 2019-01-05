@@ -37,7 +37,7 @@ class ProjectBox extends React.Component {
                 </View>
                 <TouchableHighlight
                     onPress={() => {
-                        this.props.navigation.navigate('Project', {
+                        this.props.navigation.navigate('Goal', {
                             projectId: this.props.projectId,
                             projectName: this.props.projectName
                         });
