@@ -1,6 +1,7 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, TouchableHighlight, Image } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, TouchableHighlight, Image, Dimensions } from 'react-native'
 import { connect } from 'react-redux'
+import { Header } from 'react-navigation'
 
 import CustomScrollView from '../utilities/scroll';
 import AddButton from '../utilities/addButton';
@@ -71,6 +72,7 @@ class HomeScreen extends React.Component {
                                     <ProjectBox key={project.Id} projectId= {project.Id} projectName={project.name} projectColor={project.color} navigation={this.props.navigation} />
                                 ))}
                             </View>}
+                    maxHeight={Dimensions.get('window').height - Header.HEIGHT}
                 />
                 <AddButton
                     onPress={() => this.props.navigation.navigate('Form', {

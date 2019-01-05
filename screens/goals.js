@@ -1,7 +1,8 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native'
 import { connect } from 'react-redux'
 import Moment from 'moment'
+import { Header } from 'react-navigation'
 
 import CustomScrollView from '../utilities/scroll'
 import AddButton from '../utilities/addButton';
@@ -9,49 +10,71 @@ import AddButton from '../utilities/addButton';
 class GoalRow extends React.Component {
     render() {
         return (
-            <View style={styles.goalRow}>
-                <View style={styles.goalRowLayout}>
-                    <View style={{ flex: 1.5, height: 30 }}>
-                        <Text style={styles.goalHeading} numberOfLines={1}>
-                            {this.props.name}
-                        </Text>
-                    </View>
-                    <View style={{ flex: 1, height: 30 }}>
-                        <Text style={styles.goalDue}>
-                            Due: {this.props.due}
-                        </Text>
+            <TouchableOpacity onPress={this.props.updateExpandedState}>
+                <View style={styles.goalRow}>
+                    <View style={styles.goalRowLayout}>
+                        <View style={{ flex: 1.5, height: 30 }}>
+                            <Text style={styles.goalHeading} numberOfLines={1}>
+                                {this.props.name}
+                            </Text>
+                        </View>
+                        {(this.props.due !== '') ?
+                            <View style={{ flex: 1, height: 30 }}>
+                                <Text style={styles.goalDue}>
+                                    Due: {this.props.due}
+                                </Text>
+                            </View> 
+                            : null 
+                        }
                     </View>
                 </View>
-                <View style={styles.downView}>
-                    <TouchableOpacity onPress={this.props.updateExpandedState}>
-                        <Image style={styles.arrow} source={require('../assets/images/down.png')} />
-                    </TouchableOpacity>
-                </View>
-            </View>
+            </TouchableOpacity>
         );
     }
 }
 
 class GoalRowExpanded extends React.Component {
+
+    buildCustomHeight = () => {
+        let height = 75
+        if (this.props.due !== '') {
+            height += 15
+        }
+        if (this.props.tasks.length > 0) {
+            height += 210
+        }
+        return height
+    }
+
+    showDue = this.props.due !== ''
+    showTasks = this.props.tasks.length > 0
+
     render() {
         return (
-            <View style={styles.goalRowExpanded}>
+            <View style={goalRowExpanded(this.buildCustomHeight())}>
                 <View style={styles.goalRowLayoutExpanded}>
-                    <Text style={styles.goalHeadingExpanded} numberOfLines={2}>
-                        {this.props.name}
-                    </Text>
+                    <TouchableOpacity onPress={this.props.updateExpandedState}>
+                        <Text style={styles.goalHeadingExpanded} numberOfLines={2}>
+                            {this.props.name}
+                        </Text>
+                    </TouchableOpacity>
+                    {(this.showDue) ?
                     <Text style={styles.goalDueExpanded}>
                         Due: {this.props.due}
-                    </Text>
+                    </Text> : null}
+                    {(this.showTasks) ?
                     <View style={styles.taskWrapper}>
                         <Text style={{ fontSize: 18, color: '#757575'}}>
                             Tasks:
                         </Text>
                         <View style={styles.taskRow}>
                             <View style={styles.taskRowLayout}>
-                                {this.props.tasks.map(task =>
-                                        <Task key={task.Id} taskName={task.name} taskDue={Moment(task.due).format('DD-MM-YYYY')} />
+                            <CustomScrollView
+                                content={this.props.tasks.map(task =>
+                                        <Task key={task.Id} taskName={task.name} taskDue={this.props.formatDate(task.due)} />
                                 )}
+                                maxHeight={165}
+                            />
                             </View>
                         </View>
                         <AddButton
@@ -61,12 +84,14 @@ class GoalRowExpanded extends React.Component {
                             })}
                             size='small'
                         />
-                    </View>
-                </View>
-                <View style={styles.downView}>
-                    <TouchableOpacity onPress={this.props.updateExpandedState}>
-                        <Image style={styles.arrow} source={require('../assets/images/up.png')} />
-                    </TouchableOpacity>
+                    </View>: 
+                    <AddButton
+                        onPress={() => this.props.navigation.navigate('Form', {
+                            formType: 'Add Task',
+                            goalId: this.props.goalId
+                        })}
+                        size='small-noTask'
+                    />}
                 </View>
             </View>
         );
@@ -83,11 +108,13 @@ class Task extends React.Component {
                             {this.props.taskName}
                         </Text>
                     </View>
-                    <View style={{ flex: 1, height: 50, justifyContent: 'center' }} numberOfLines={2}>
-                        <Text style={styles.taskDue}>
-                            Due: {this.props.taskDue}
-                        </Text>
-                    </View>
+                    {(this.props.taskDue !== '') ?
+                        <View style={{ flex: 1, height: 50, justifyContent: 'center' }} numberOfLines={2}>
+                            <Text style={styles.taskDue}>
+                                Due: {this.props.taskDue}
+                            </Text>
+                        </View> : null
+                    }
                 </View>
             </View>
         );
@@ -119,6 +146,14 @@ class ProjectScreen extends React.Component {
         }
     }
 
+    formatDate(date) {
+        if (date === '') {
+            return ''
+        } else {
+            return Moment(date).format('DD-MM-YYYY')
+        }
+    }
+
     render() {
         const goals = this.props.goals.filter(goal => goal.projectId === this.props.navigation.getParam('projectId'))
         return(
@@ -126,11 +161,12 @@ class ProjectScreen extends React.Component {
                 <CustomScrollView
                     content={goals.map(goal => (
                                 (this.state.isExpanded[goal.Id]) ?
-                                <GoalRowExpanded key={goal.Id} goalId={goal.Id} name={goal.name} due={Moment(goal.due).format('DD-MM-YYYY')} 
+                                <GoalRowExpanded key={goal.Id} goalId={goal.Id} name={goal.name} due={this.formatDate(goal.due)} 
                                 tasks={this.props.tasks.filter(task => task.goalId === goal.Id)} updateExpandedState={this.updateExpandedState.bind(this, goal.Id, false)} 
-                                navigation={this.props.navigation} /> :
-                                <GoalRow key={goal.Id} name={goal.name} due={Moment(goal.due).format('DD-MM-YYYY')} updateExpandedState={this.updateExpandedState.bind(this, goal.Id, true)} />
+                                navigation={this.props.navigation} formatDate={this.formatDate} /> :
+                                <GoalRow key={goal.Id} name={goal.name} due={this.formatDate(goal.due)} updateExpandedState={this.updateExpandedState.bind(this, goal.Id, true)} />
                             ))}
+                    maxHeight={Dimensions.get('window').height - Header.HEIGHT}
                 />
                 <AddButton
                     onPress={() => this.props.navigation.navigate('Form', {
@@ -192,11 +228,6 @@ const styles = StyleSheet.create({
         height: 15,
         width: 30,
     },
-    goalRowExpanded: {
-        height: 300,
-        borderBottomWidth: 1,
-        borderColor: '#9a9a9a',
-    },
     goalRowLayoutExpanded: {
         paddingLeft: 30,
         paddingRight: 10,
@@ -220,7 +251,6 @@ const styles = StyleSheet.create({
         marginTop: 10,
         height: 200,
         flex: 1,
-        borderWidth: 1,
     },
     taskRow: {
         marginTop: 10,
@@ -255,3 +285,11 @@ const styles = StyleSheet.create({
         color: '#757575',
     },
 });
+
+const goalRowExpanded = (height) => {
+    return {
+        height: height,
+        borderBottomWidth: 1,
+        borderColor: '#9a9a9a',
+    }
+}

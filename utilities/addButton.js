@@ -3,13 +3,22 @@ import { View, TouchableOpacity, StyleSheet, Image } from 'react-native'
 
 export default class AddButton extends React.Component {
     render() {
-        const size = (this.props.size === 'small') ? 
-            [styles.addContainerSmall, styles.addButtonDefault] : [styles.addContainerDefault, styles.addButtonDefault]
-        console.log(size)
+        let size = []
+        switch (this.props.size){
+            case 'small':
+                size = [styles.addContainerSmall, styles.addButtonSmall, styles.addImageSmall]
+                break
+            case 'small-noTask':
+                size = [styles.addContainerSmallNoTask, styles.addButtonSmall, styles.addImageSmall]
+                break
+            default:
+                size = [styles.addContainerDefault, styles.addButtonDefault, styles.addImageDefault]
+                break
+        }
         return(
             <View style={size[0]}>
                 <TouchableOpacity style={size[1]} onPress={this.props.onPress}>
-                    <Image style={{ height: 40, width: 40 }} source={require('../assets/images/plus.png')} />
+                    <Image style={size[2]} source={require('../assets/images/plus.png')} />
                 </TouchableOpacity>
             </View>
         )
@@ -19,8 +28,8 @@ export default class AddButton extends React.Component {
 const styles = StyleSheet.create({
     addContainerDefault: {
         position: 'absolute',
-        left: 290,
-        top: 490
+        right: 10,
+        bottom: 10
     },
     addButtonDefault: {
         justifyContent: 'center',
@@ -32,10 +41,14 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         backgroundColor: '#ABABEF'
     },
+    addImageDefault: {
+        height: 40,
+        width:40
+    },
     addContainerSmall: {
         position: 'absolute',
-        left: 285,
-        top: 165
+        right: 5,
+        bottom: 10
     },
     addButtonSmall: {
         justifyContent: 'center',
@@ -43,8 +56,17 @@ const styles = StyleSheet.create({
         height: 30,
         width: 30,
         borderWidth: 1,
-        borderColor: '#ABCDEF',
+        borderColor: '#ABABEF',
         borderRadius: 50,
-        backgroundColor: '#ABCDEF'
-    }
+        backgroundColor: '#ABABEF'
+    },
+    addImageSmall: {
+        height: 25,
+        width: 25
+    },
+    addContainerSmallNoTask: {
+        position: 'absolute',
+        right: 5,
+        bottom: 3
+    },
 });

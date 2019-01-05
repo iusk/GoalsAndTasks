@@ -1,20 +1,16 @@
 import React from 'react'
-import { ScrollView, Dimensions } from 'react-native'
-import { Header } from 'react-navigation'
-
-const height = Dimensions.get('window').height - Header.HEIGHT
+import { ScrollView } from 'react-native'
 
 export default class CustomScrollView extends React.Component {
 
     state={ screenHeight: 0 }
 
     onContentSizeChange = (contentWidth, contentHeight) => {
-        console.log('changing height to ' + contentHeight)
         this.setState({ screenHeight: contentHeight })
     }
 
     render() {
-        const scrollEnabled = this.state.screenHeight > height
+        const scrollEnabled = this.state.screenHeight > this.props.maxHeight
         return(
             <ScrollView
                 style={{ flex: 1 }}
